@@ -1,6 +1,9 @@
 library(dplyr)
 
 # load working data
+
+load("~/Desktop/R Stuff/DFS Modeling/data_UPDATE THE DATE.RData")
+
 game_logs <- game_logs_raw
 players <- players_raw
 teams <- teams_raw
