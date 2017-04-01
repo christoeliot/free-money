@@ -3,16 +3,13 @@
 # library(devtools)
 # devtools::install_github("stattleship/stattleship-r")
 # install.packages("dplyr")
-# install.packages("ggplot2")
-# install.packages("plotly")
 
-# POI: THIS WHOLE THING TAKES A WHILE (@MEETCH - CAN WE TARGET THESE API CALLS BETTER? IN A PERFECT WORLD WE WOULD ON QUERY ENDPOINTS FOR PLAYERS
-# WE KNOW WE CAN PUT INTO OUR LINEUPS)
+# POI: THIS WHOLE THING TAKES A WHILE
 
 # load the libraries needed
 library(stattleshipR)
 
-set_token("b53532dbcec8625311565ef38125b4ba")
+set_token("YOUR API TOKEN")
 
 sport <- 'basketball'  
 league <- 'nba'  
@@ -61,4 +58,4 @@ teams_raw <- teams
 injuries_raw <- injuries
 games_raw <- games
 
-# save.image("~/Desktop/R Stuff/ DFS Modeling/data UPDATE DATE.RData")
+save.image("~/Desktop/R Stuff/ DFS Modeling/data_UPDATE_THE_DATE.RData")
