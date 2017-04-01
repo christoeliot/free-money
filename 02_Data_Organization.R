@@ -2,7 +2,7 @@ library(dplyr)
 
 # load working data
 
-load("~/Desktop/R Stuff/DFS Modeling/data_UPDATE THE DATE.RData")
+load("LOCATION AND FILE NAME HERE")
 
 game_logs <- game_logs_raw
 players <- players_raw
@@ -11,7 +11,7 @@ injuries <- injuries_raw
 games <- games_raw
 
 
-# correct column names
+# correct column names - maybe change to grepl eventually
 colnames(teams)[1] <- 'team_id'
 colnames(players)[1] <- 'player_id'
 colnames(injuries)[1] <- 'injury_id'
@@ -49,12 +49,12 @@ games <- games[, (!names(games) %in% shed)]
 game_logs <- game_logs[, (!names(game_logs) %in% shed)]
 injuries <- injuries[, (!names(injuries) %in% shed)]
 
-# suppress specific columns for each dataframe 
+# suppress specific columns for each dataframe
 shed <- c('hashtags')
 teams <- teams[, (!names(teams) %in% shed)]
 shed <- c('bats','captain','handedness','high_school','humanized_salary','pro_debut','mlbam_id')
 players <- players[, (!names(players) %in% shed)]
-shed <- c('at_neutral_site','broadcast','clock','clock_secs','daytime','duration','humidity','interval_number',
+shed <- c('game_name', 'interval', 'at_neutral_site','broadcast','clock','clock_secs','daytime','duration','humidity','interval_number',
           'period','period_label','status','internet_coverage','satellite_coverage','television_coverage',
           'temperature','temperature_unit','weather_conditions','wind_direction','wind_speed','wind_speed_unit')
 games <- games[, (!names(games) %in% shed)]
@@ -64,6 +64,10 @@ games <- games[, (!names(games) %in% shed)]
 # correct game played status (total_time_played <= 0, the player didn't play)
 game_logs$game_played <- ifelse(game_logs$time_played_total > 0, TRUE, FALSE)
 game_logs <- game_logs[game_logs$game_played == TRUE,]
+
+# add column for fantasty score
+game_logs$dk_score <- with(game_logs, (points + 0.5 * three_pointers_made + 1.25 * rebounds_total + 1.5 * assists + 2 * steals
+                                       + 2 * blocks - 0.5 * turnovers + 1.5 * double_double + 3 * triple_double))
 
 # merge, check for mismatch, supress redundant columns, rename for workability
 
@@ -113,9 +117,9 @@ if(!all(game_logs$team_id.x == game_logs$team_id.y)){
 game_logs <- game_logs[, !(names(game_logs) %in% c('team_id.y', 'on', 'started_at'))]
 game_logs$ended_at <- as.Date(game_logs$ended_at)
 
-colnames(game_logs)[2] <- 'team_id'
-colnames(game_logs)[29] <- 'league_id'
-colnames(game_logs)[45] <- 'home_team_outcome'
-colnames(game_logs)[46] <- 'home_team_score'
-colnames(game_logs)[47] <- 'away_team_outcome'
-colnames(game_logs)[48] <- 'away_team_score'
+colnames(game_logs)[grepl('team_id', names(game_logs))] <- 'team_id'
+colnames(game_logs)[grepl('league_id', names(game_logs))] <- 'league_id'
+colnames(game_logs)[grepl('home_team_outcome', names(game_logs))] <- 'home_team_outcome'
+colnames(game_logs)[grepl('home_team_score', names(game_logs))] <- 'home_team_score'
+colnames(game_logs)[grepl('away_team_outcome', names(game_logs))] <- 'away_team_outcome'
+colnames(game_logs)[grepl('away_team_score', names(game_logs))] <- 'away_team_score'
