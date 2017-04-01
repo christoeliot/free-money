@@ -101,7 +101,7 @@ game_logs <- game_logs[!(game_logs$game_id == asg),]
 game_logs <- merge(players, game_logs, by = 'player_id')
 
 # check for mistmatch in team_id
-# NEED TO IGNORE TRADED PLAYERS SOMEHOW - CAN WE GET A LIST OF TRADED PLAYERS SOMEWHERE TO EXCLUDE IN THIS?
+# everyone on this list should be a traded player
 if(!all(game_logs$team_id.x == game_logs$team_id.y)){
   mismatch <- game_logs %>%
     filter(!(game_logs$team_id.x == game_logs$team_id.y)) %>%
