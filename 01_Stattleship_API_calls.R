@@ -6,7 +6,6 @@
 
 # POI: THIS WHOLE THING TAKES A WHILE
 
-# load the libraries needed
 library(stattleshipR)
 
 set_token("YOUR API TOKEN")
