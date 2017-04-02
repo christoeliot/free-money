@@ -8,7 +8,11 @@ bball_minutes_forecast <- function(df_list, contest_date) {
   pt_projections <- as.data.frame(matrix(ncol = 5, nrow = length(df_list)))
   colnames(pt_projections) <- c('player_id', 'player_name', 'yhat', 'yhat_lower', 'yhat_upper')
     
-  hold <- c('ended_at', 'time_played_total')  
+  hold <- c('ended_at', 'time_played_total')
+  
+  n <- length(df_list)
+  pb <- txtProgressBar(min = 0, max = n, style=3)
+  
   for (i in 1:length(df_list)) {
     temp <- as.data.frame(df_list[i])
     m <- temp[, grepl(paste(hold, collapse = '|'), names(temp))]
@@ -21,11 +25,12 @@ bball_minutes_forecast <- function(df_list, contest_date) {
     
     # you got dat forecast - now how do you get the numbers that match today's contest and player_id? put that shit in the list
     pid <- temp[1, grepl('player_id', names(temp))]
-    pn <- temp[1, grepl('player_id', names(temp))]
-    yh <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat'] # CAN I FORCE PREDICTION TO OCCUR ON A CERTAIN DAY
-    yhl <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_lower']
-    yhu <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_upper']
+    pn <- temp[1, grepl('player_name', names(temp))]
+    yh <- ifelse(!is.na(forecast$ds %in% as.Date(contest_date)), forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat'], 'NO PROJECTION FOR CONTEST DATE') 
+    yhl <- ifelse(!is.na(forecast$ds %in% as.Date(contest_date)), forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_lower'], 'NO PROJECTION FOR CONTEST DATE')
+    yhu <- ifelse(!is.na(forecast$ds %in% as.Date(contest_date)), forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_upper'], 'NO PROJECTION FOR CONTEST DATE')
     to_add <- c(pid, pn, yh, yhl, yhu)
+    
     pt_projections[i,] <- to_add
   }
   return(pt_projections)
@@ -35,7 +40,7 @@ bball_minutes_forecast <- function(df_list, contest_date) {
 bball_dkscore_forecast <- function(df_list, contest_date) {
   library(prophet)
   dks_projections <- as.data.frame(matrix(ncol = 5, nrow = length(df_list)))
-  colnames(pt_projections) <- c('player_id', 'player_name', 'yhat', 'yhat_lower', 'yhat_upper')
+  colnames(dks_projections) <- c('player_id', 'player_name', 'yhat', 'yhat_lower', 'yhat_upper')
   
   hold <- c('ended_at', 'dk_score')  
   for (i in 1:length(df_list)) {
@@ -50,7 +55,7 @@ bball_dkscore_forecast <- function(df_list, contest_date) {
     
     # you got dat forecast - now how do you get the numbers that match today's contest and player_id? put that shit in the list
     pid <- temp[1, grepl('player_id', names(temp))]
-    pn <- temp[1, grepl('player_id', names(temp))]
+    pn <- temp[1, grepl('player_name', names(temp))]
     yh <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat'] # CAN I FORCE PREDICTION TO OCCUR ON A CERTAIN DAY
     yhl <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_lower']
     yhu <- forecast[forecast$ds %in% as.Date(contest_date), names(forecast) %in% 'yhat_upper']

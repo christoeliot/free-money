@@ -25,12 +25,14 @@ keeper_game_logs <- game_logs[game_logs$player_id %in% contest$player_id,]
 # subset logs by player and store in list 
 contest_game_logs <- split(keeper_game_logs, keeper_game_logs$player_id)
 
-# get minutes for tonight's contest
+# forecast minutes for tonight's contest and infer dfs score
 minutes <- bball_minutes_forecast(contest_game_logs, '2017-04-01')
 
-# get fantasy points for tonight's contest (many ways to get stats)
+# forecast fantasy points for tonight's contest
 dkpoints <- bball_dkscore_forecast(contest_game_logs, '2017-04-01')
 
 # add that shit to the contest df
+model_1 <- merge(contest, minutes, by = 'player_id', all = TRUE)
+model_2 <- merge(contest, dkpoints, by = 'player_id', all = TRUE)
 
 # optimize lineup
