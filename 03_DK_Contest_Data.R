@@ -1,4 +1,4 @@
-source("00_Helpers.R")
+source('00_Helpers.R')
 
 #import DK Salaries and assign to contest
 
@@ -27,12 +27,18 @@ contest_game_logs <- split(keeper_game_logs, keeper_game_logs$player_id)
 
 # forecast minutes for tonight's contest and infer dfs score
 minutes <- bball_minutes_forecast(contest_game_logs, '2017-04-01')
+to_summ <- keeper_game_logs[, !(names(keeper_game_logs) %in% 'team_id')]
+ppm_stats_month <- ppm_stats(to_summ, 30)
+colnames(ppm_stats_month) <- paste0('30day_', colnames(ppm_stats_month))
+ppm_stats_fortnight <- ppm_stats(to_summ, 14)
+colnames(ppm_stats_fortnight) <- paste0('14day_', colnames(ppm_stats_fortnight))
 
 # forecast fantasy points for tonight's contest
 dkpoints <- bball_dkscore_forecast(contest_game_logs, '2017-04-01')
 
 # add that shit to the contest df
 model_1 <- merge(contest, minutes, by = 'player_id', all = TRUE)
+model_1 <- merge(model_1, ppm_stats_month, by = 'player_id')
 model_2 <- merge(contest, dkpoints, by = 'player_id', all = TRUE)
 
 # optimize lineup
