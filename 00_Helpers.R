@@ -10,6 +10,7 @@ bball_minutes_forecast <- function(df_list, contest_date) {
     
   hold <- c('ended_at', 'time_played_total')
   
+  # i don't think this works right now - look into the progress bar 
   n <- length(df_list)
   pb <- txtProgressBar(min = 0, max = n, style=3)
   
@@ -66,6 +67,7 @@ bball_dkscore_forecast <- function(df_list, contest_date) {
 }
 
 ppm_stats <- function(gls, days_back) {
+  library(dplyr)
   ppm_stats <-
     gls %>%
     filter(Sys.Date() - gls$ended_at <= days_back ) %>%

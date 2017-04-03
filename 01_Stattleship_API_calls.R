@@ -57,4 +57,4 @@ teams_raw <- teams
 injuries_raw <- injuries
 games_raw <- games
 
-save.image("ADD LOCATION AND FILE NAME HERE")
+save.image(paste0('data_',Sys.Date()))
