@@ -92,3 +92,9 @@ ppm_stats <- function(gls, days_back) {
               tfouls_pm_ave = mean(technical_fouls / time_played_total), tfouls_pm_sd = sd(technical_fouls / time_played_total),
               plusminus_ave = mean(plus_minus), plusminus_sd = sd(plus_minus))
 }
+
+optimize_lineup <- function(gls, value = 'dkscore', constraints) {
+  library(Rsymphony)
+  
+  
+} 
