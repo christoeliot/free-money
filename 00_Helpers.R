@@ -11,8 +11,8 @@ bball_minutes_forecast <- function(df_list, contest_date) {
   hold <- c('ended_at', 'time_played_total')
   
   # i don't think this works right now - look into the progress bar 
-  n <- length(df_list)
-  pb <- txtProgressBar(min = 0, max = n, style=3)
+  # n <- length(df_list)
+  # pb <- txtProgressBar(min = 0, max = n, style=3)
   
   for (i in 1:length(df_list)) {
     temp <- as.data.frame(df_list[i])
