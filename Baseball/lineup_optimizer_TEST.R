@@ -81,9 +81,6 @@ stdevs[is.na(stdevs$sd_DK), names(stdevs) %in% 'sd_DK'] <- 0
 summ <- merge(averages, stdevs, by = 'player_id')
 contest <- merge(contest, summ, by = 'player_id')
 
-### TAKE OUT DUDES ON THE DL 
-
-
 # generate lineups matrix or whatever 
 
 # Prepare constraint matrix of zeros
