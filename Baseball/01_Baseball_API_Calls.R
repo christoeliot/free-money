@@ -80,6 +80,10 @@ games_2016$official_ids <- as.character(games_2016$official_ids)
 write.csv(games_2015, 'mlb_games_2015.csv')
 write.csv(games_2016, 'mlb_games_2016.csv')
 
+
+################################################################################################################################
+# these guys don't work or haven't been run (we want to know pitcher vs batter and pitcher vs team)
+
 ep <- 'pitches'
 pitches_2015 <- data.frame()
 pitches_2016 <- data.frame()
