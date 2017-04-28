@@ -41,6 +41,21 @@ scrub <- scrub[!(scrub$player_id %in% pp_id),]
 scrub <- unique(scrub$player_id)
 contest <- contest[!(contest$player_id %in% scrub),]
 
+# scrub injured players
+ep <- 'injuries'
+q_body <- list()
+inj <- ss_get_result(sport = sport, league = league, ep = ep, query = q_body, walk = TRUE)
+injuries <- do.call('rbind', lapply(inj, function(x) x$injuries))
+colnames(injuries)[1] <- 'injury_id'
+keep <- c('injury_id', 'started_on', 'status_updated_at', 'note',
+          'status', 'status_label', 'player_id')
+injuries <- injuries[, names(injuries) %in% keep]
+injuries <- merge(injuries, players, by = 'player_id')
+scrub <- injuries[injuries$status %in% c('D7', 'D10', 'D60'),]
+scrub <- unique(scrub$player_id)
+contest <- contest[!(contest$player_id %in% scrub),]
+
+
 # merge w/ 2017 game logs, add dk_score, summarise with avg and std dev
 game_logs_2017 <- read.csv('Baseball/mlb_game_logs_2017.csv')
 keep <- c('player_id', 'game_id', 'game_played', 'doubles', 'hit_by_pitch', 'hits', 'home_runs', 'innings_pitched', 'runs', 'runs_batted_in', 'singles', 
@@ -65,6 +80,8 @@ stdevs[is.na(stdevs$sd_DK), names(stdevs) %in% 'sd_DK'] <- 0
 
 summ <- merge(averages, stdevs, by = 'player_id')
 contest <- merge(contest, summ, by = 'player_id')
+
+### TAKE OUT DUDES ON THE DL 
 
 
 # generate lineups matrix or whatever 
@@ -191,6 +208,7 @@ monte_agg <- as.data.frame(t(monte_agg[,-1]))
 colnames(monte_agg) <- temp
 
 
+
 ##############################################################################################
 ################################## PICKLIST TEST GROUND ######################################
 
@@ -219,32 +237,8 @@ saveWorkbook(wb, 'Baseball/mlb_dk_match_key.xlsx')
 ###################################################################################
 ########################## INJURIES ######################################
 
-ep <- 'injuries'
-q_body <- list()
-inj <- ss_get_result(sport = sport, league = league, ep = ep, query = q_body, walk = TRUE)
-injuries <- do.call('rbind', lapply(inj, function(x) x$injuries))
-colnames(injuries)[1] <- 'injury_id'
-keep <- c('injury_id', 'started_on', 'status_updated_at', 'note',
-             'status', 'status_label', 'player_id')
-injuries <- injuries[, names(injuries) %in% keep]
-
-injuries <- merge(injuries, players, by = 'player_id')
-
-d60 <- injuries[injuries$status == 'D60',]
-
-### TAKE OUT DUDES ON THE DL 
 
 #####################################################################################
-
-
-########## WHAT DOES THE PITCHER TABLE LOOK LIKE? ###################################
-# previous stats, by time horizon, opponent shit, park shit
-# k/9, avg innings, walks, era, win/start
-
-
-######################################################################################
-#################### WHAT DOES THE OFFENSE TABLE LOOK LIKE? ##########################
-# woba, slugging, opponent shit, iso
 
 
 
