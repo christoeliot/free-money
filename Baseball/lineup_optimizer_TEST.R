@@ -78,7 +78,7 @@ stdevs <- aggregate(DK_Score ~ player_id, data = game_logs_2017, FUN = sd)
 colnames(stdevs)[2] <- 'sd_DK'
 stdevs[is.na(stdevs$sd_DK), names(stdevs) %in% 'sd_DK'] <- 0
 
-summ <- merge(averages, stdevs, by = 'player_id')
+summ <- merge(averages, stdevs, by = 'player_id')   
 contest <- merge(contest, summ, by = 'player_id')
 
 # generate lineups matrix or whatever 
@@ -186,23 +186,18 @@ for(i in 2:25){
 }
 
 # do 10000 simulations of these lineups (still neeed to add that hitters cannot score negative)
-monte <- matrix(0, nrow = dim(solution)[1], ncol = 10001)
+monte <- matrix(0, nrow = dim(solution)[1], ncol = 11)
 for (i in 1:dim(solution)[1]){
-  monte[i,] <- c(solution$number[i], rnorm(10000, mean = solution$avg_DK[i], sd = solution$sd_DK[i]))
+  monte[i,] <- c(solution$number[i], rnorm(10, mean = solution$avg_DK[i], sd = solution$sd_DK[i]))
 }
 
 # aggregate
 monte <- as.data.frame(monte)
 colnames(monte)[1] <- 'lineup_num'
-monte_agg <-
-  monte %>%
-  group_by(lineup_num) %>%
-  summarise_each(funs(sum))
+monte <- lapply(monte, function(x) type.convert(as.character((x))))
+monte_agg <- aggregate(.~lineup_num, monte, sum)
 
-temp <- monte_agg$lineup_num
 
-monte_agg <- as.data.frame(t(monte_agg[,-1]))
-colnames(monte_agg) <- temp
 
 
 
