@@ -115,6 +115,8 @@ colnames(game_logs_2016)[1] <- 'game_log_id'
 # 3 pts / 100 yd rushing game, 6 pts / receiving td, 0.1 pts / receiving yd, 3 pts / 100 yd receiving game, 1 pt / reception,
 # -1 pts / fumble
 
+
+# fix this
 game_logs_2016$DK_Score <- with(game_logs_2016, 4 * passes_touchdowns + 0.04 * passes_yards_gross + 
                                   3 * ifelse(passes_yards_gross >= 300, 1, 0) - 1 * passes_interceptions +
                                   6 * rushes_touchdowns + 0.1 * rushes_yards + 3 * ifelse(rushes_yards >= 100, 1, 0) +
@@ -148,8 +150,7 @@ ind_qb <- which(contest$Position %in% c('QB'))
 ind_rb <- which(contest$Position %in% c('RB')) 
 ind_wr <- which(contest$Position %in% c('WR'))
 ind_te <- which(contest$Position %in% c('TE'))
-ind_flex <- which(contest$Position %in% c('RB', 'HB', 'WR', 'TE', 'rb', 'hb', 'te'))
-ind_dst <- which(contest$Position %in% c('OF', '1B/OF', '2B/OF', '3B/OF', 'C/OF'))
+ind_flex <- which(contest$Position %in% c('RB', 'HB', 'WR', 'TE'))
 
 # update eval function to check for total number of players and types of players
 # projected points --> average points * heat index * matchup favorability
