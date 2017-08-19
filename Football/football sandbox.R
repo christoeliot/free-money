@@ -13,9 +13,10 @@
   # incorporate into Shiny app
   # make money
 
+# demitri adds stuff on master
 library(stattleshipR)
 
-set_token('b53532dbcec8625311565ef38125b4ba')
+set_token('b53532dbcec86311565ef38125b4ba')
 
 sport <- 'football'
 league <- 'nfl'
