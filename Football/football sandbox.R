@@ -15,10 +15,14 @@
 
 library(stattleshipR)
 
-set_token('b53532dbcec8625311565ef38125b4ba')
+set_token('b53532dbcec8565ef38125b4ba')
+
+# demitri new comment 
 
 sport <- 'football'
 league <- 'nfl'
+
+# demitri adds more stuff
 
 ep <- 'players'
 q_body <- list()
