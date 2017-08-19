@@ -139,7 +139,6 @@ write.csv(team_game_logs_2016, 'Football/nfl_team_game_logs_2016.csv')
 
 
 
-contest_raw <- read.csv('Football/DKSalaries.csv')
 
 # roster requirements
 # 1 qb, 2 rb, 3 wr, 1 te, 1 flex, 1 dst
