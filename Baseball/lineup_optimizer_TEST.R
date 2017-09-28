@@ -98,7 +98,7 @@ evalFunc <- function(x) {
   
   if(solution_cost > salary_cap) return(abs(50000 - solution_cost) / solution_goal)
   if(sum(x) != 10)  return(200 * (abs(sum(x) - 10)) / solution_goal)
-  if(sum(x[ind_p]) > 2) return(sum(x[ind_p]) * 100 / solution_goal)
+  if(sum(x[ind_p]) > 2) return(sum(x[ind_p]) * 1000 / solution_goal)
   if(sum(x[ind_1b]) > 1) return(sum(x[ind_1b]) * 50 / solution_goal)
   if(sum(x[ind_2b]) > 1) return(sum(x[ind_2b]) * 50 / solution_goal)
   if(sum(x[ind_3b]) > 1) return(sum(x[ind_3b]) * 50 / solution_goal)

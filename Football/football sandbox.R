@@ -14,27 +14,15 @@
   # make money
 
 library(stattleshipR)
+library(genalg)
+library(plyr)
+library(dplyr)
+
 
 set_token('b53532dbcec8625311565ef38125b4ba')
 
 sport <- 'football'
 league <- 'nfl'
-
-ep <- 'players'
-q_body <- list()
-plyrs <- ss_get_result(sport = sport, league = league, ep = ep, query = q_body, walk = TRUE)
-players <- do.call('rbind', lapply(plyrs, function(x) x$players))
-players <- players[players$active == TRUE, ]
-drop <- c('X', 'created_at', 'updated_at', 'active', 'bats', 'captain', 'city', 'country', 'draft_overall_pick',
-          'draft_round', 'draft_season', 'draft_team_name', 'handedness', 'high_school', 'humanized_salary',
-          'mlbam_id', 'nickname', 'position_name', 'pro_debut', 'salary_currency', 'school', 'sport', 'state',
-          'uniform_number', 'unit_of_height','unit_of_weight', 'weight', 'years_of_experience', 'league_id')
-players <- players[, !(names(players) %in% drop)]
-skpos <- c('WR', 'RB', 'QB', 'TE', 'HB')
-players <- players[players$position_abbreviation %in% skpos, ]
-colnames(players)[1] <- 'player_id'
-# drop injured players
-write.csv(players, 'Football/nfl_players.csv')
 
 ep <- 'teams'
 q_body = list()
@@ -46,21 +34,43 @@ teams <- teams[, !(names(teams) %in% drop)]
 colnames(teams)[1] <- 'team_id'
 write.csv(teams, 'Football/nfl_teams.csv')
 
+ 
 # creating dataset(s) for exploration
 # need to create a DK match key too!!!!
 
 # i will need at least one dataset for individual players and one for teams (i.e. opponents) 
+tms <- unique(teams$slug)
+ep <- 'players'
+players <- data.frame()
+for (i in 1:length(tms)){
+  q_body <- list(team_id = tms[i])
+  plyrs <- ss_get_result(sport = sport, league = league, ep = ep, query = q_body, walk = TRUE)
+  players <- rbind(players, do.call('rbind', lapply(plyrs, function(x) x$players)))
+}
+colnames(players)[1] <- 'player_id'
+write.csv(players, 'Football/nfl_players.csv')
 
-tms <- unique(teams$slug) # to walk through query 
+
+drop <- c('X', 'created_at', 'updated_at', 'active', 'bats', 'captain', 'city', 'country', 'draft_overall_pick',
+          'draft_round', 'draft_season', 'draft_team_name', 'handedness', 'high_school', 'humanized_salary',
+          'mlbam_id', 'nickname', 'position_name', 'pro_debut', 'salary_currency', 'school', 'sport', 'state',
+          'uniform_number', 'unit_of_height','unit_of_weight', 'weight', 'years_of_experience', 'league_id')
+players <- players[, !(names(players) %in% drop)]
+
+ep <- 'injuries'
+q_body <- list()
+inj <- ss_get_result(sport = sport, league = league, ep = ep, query = q_body, walk = TRUE)
+injuries <- do.call('rbind', lapply(inj, function(x) x$injuries))
 
 games_2016 <- data.frame()
 ep <- 'games'
-for (i in 1:length(tms)){
-  qbody <- list(status = 'ended', season_id = 'nfl-2016-2017', team_id = tms[i])
-  gms <- ss_get_result(sport = sport, league = league, ep = ep, query = qbody, walk = TRUE)
-  games_2016 <- rbind(games_2016, do.call('rbind', lapply(gms, function(x) x$games)))
-  Sys.sleep(0.5)
-}
+qbody <- list(status = 'ended', season_id = 'nfl-2016-2017')
+gms <- ss_get_result(sport = sport, league = league, ep = ep, query = qbody, walk = TRUE)
+games_2016 <- do.call('rbind', lapply(gms, function(x) x$games))
+drop <- c('official_ids')
+games_2016 <- games_2016[, !(names(games_2016) %in% drop)]
+write.csv(games_2016, 'Football/nfl_games_2016.csv')
+
 drop <- c('X', 'created_at', 'updated_at', 'at_neutral_site', 'attendance', 'broadcast', 'clock', 'clock_secs',
           'daytime', 'duration', 'ended_at', 'humidity', 'interval', 'interval_number', 'interval_type', 'label',
           'name', 'on', 'period', 'period_label', 'score', 'started_at', 'status', 'internet_coverage', 'satellite_coverage',
@@ -68,7 +78,6 @@ drop <- c('X', 'created_at', 'updated_at', 'at_neutral_site', 'attendance', 'bro
           'wind_speed', 'wind_speed_unit', 'official_ids')
 colnames(games_2016)[1] <- 'game_id'
 games_2016 <- games_2016[, !(names(games_2016) %in% drop)]
-write.csv(games_2016, 'Football/nfl_games_2016.csv')
 
 game_logs_2016 <- data.frame()
 ep <- 'game_logs'
@@ -78,6 +87,9 @@ for (i in 1:length(tms)){
   game_logs_2016 <- rbind(game_logs_2016, do.call('rbind', lapply(gls, function(x) x$game_logs)))
   Sys.sleep(0.5)
 }
+colnames(game_logs_2016)[1] <- 'game_log_id'
+write.csv(game_logs_2016, 'Football/nfl_game_logs_2016.csv')
+
 # maybe add some of these columns back when you have a working model
 drop <- c('X', 'created_at', 'updated_at', 'home_team_outcome', 'home_team_score', 'away_team_outcome', 'away_team_score',
           'is_away_team', 'average_yards_per_pass_attempt', 'average_yards_per_pass_completion', 'combined_tackles', 
@@ -116,14 +128,13 @@ colnames(game_logs_2016)[1] <- 'game_log_id'
 # -1 pts / fumble
 
 
-# fix this
+# fix this to be correct 
 game_logs_2016$DK_Score <- with(game_logs_2016, 4 * passes_touchdowns + 0.04 * passes_yards_gross + 
                                   3 * ifelse(passes_yards_gross >= 300, 1, 0) - 1 * passes_interceptions +
                                   6 * rushes_touchdowns + 0.1 * rushes_yards + 3 * ifelse(rushes_yards >= 100, 1, 0) +
                                   6 * receptions_touchdowns + 0.1 * receptions_yards + 3 * ifelse(receptions_yards >= 100, 1, 0) +
                                 1 * receptions_total - 1 * fumbles_lost)
                                 
-write.csv(game_logs_2016, 'Football/nfl_game_logs_2016.csv')
 
 ep <- 'team_game_logs'
 qbody <- list(status = 'ended', season_id = 'nfl-2016-2017')
@@ -138,68 +149,50 @@ colnames(team_game_logs_2016)[1] <- 'team_game_log_id'
 
 write.csv(team_game_logs_2016, 'Football/nfl_team_game_logs_2016.csv')
 
+###################################################################
+###################################################################
+### START MODEL HERE ###
 
-
-
+contest <- read.csv('Football/DKSalaries.csv')
 
 # roster requirements
 # 1 qb, 2 rb, 3 wr, 1 te, 1 flex, 1 dst
 # salary of 50k
 
-ind_qb <- which(contest$Position %in% c('QB')) 
-ind_rb <- which(contest$Position %in% c('RB')) 
-ind_wr <- which(contest$Position %in% c('WR'))
-ind_te <- which(contest$Position %in% c('TE'))
-ind_flex <- which(contest$Position %in% c('RB', 'HB', 'WR', 'TE'))
+TE_ind <- which(contest$Position == 'TE') 
+QB_ind <- which(contest$Position == 'QB') 
+RB_ind <- which(contest$Position == 'RB')
+WR_ind <- which(contest$Position == 'WR')
+DST_ind <- which(contest$Position == 'DST')
 
-# update eval function to check for total number of players and types of players
-# projected points --> average points * heat index * matchup favorability
-# heat index --> score in past 5 contest / average score (for now)
-# matchup favorability --> lefty/righty splits, opponent rating (opposing pitcher & bullpen / opposing batters), park factors
 
 evalFunc <- function(x) {
-  team_ind <- which(x == 1)
-  solution_goal <- sum(contest[team_ind, 6]) ### <-- this is probably not needed once i get "favorability" 
-  solution_cost <- sum(contest[team_ind, contest$Salary])
+  team_ind <- which(x==1)
+  current_solution_points <- sum(contest[team_ind, 5])
+  current_solution_weight <- sum(contest[team_ind, 3])
+  #   print(current_solution_weight)
+  #   print(current_solution_points)
   
-  if(solution_cost > salary_cap) return(abs(50000 - solution_cost) / solution_goal)
-  if(sum(x) != 10)  return(200 * (abs(sum(x) - 10)) / solution_goal)
-  if(sum(x[ind_p]) > 2) return(sum(x[ind_p]) * 100 / solution_goal)
-  if(sum(x[ind_1b]) > 1) return(sum(x[ind_1b]) * 50 / solution_goal)
-  if(sum(x[ind_2b]) > 1) return(sum(x[ind_2b]) * 50 / solution_goal)
-  if(sum(x[ind_3b]) > 1) return(sum(x[ind_3b]) * 50 / solution_goal)
-  if(sum(x[ind_ss]) > 1) return(sum(x[ind_ss]) * 50 / solution_goal)
-  if(sum(x[ind_c]) > 1) return(sum(x[ind_c]) * 50 / solution_goal)
-  if(sum(x[ind_of]) > 3) return(sum(x[ind_of]) * 150 / solution_goal)
-  if(sum(x[ind_p]) > 2) return(sum(x[ind_p]) * 50 / solution_goal)
-  return(-solution_goal)
+  if(current_solution_weight > sal.limit) return(abs(50000 - current_solution_weight))
+  if(sum(x) != 9 )  return(200*(abs(sum(x)-9)))
+  if(sum(x[QB_ind]) >1|| sum(x[DST_ind]) >1 )   return(500)
+  if(sum(x[TE_ind]) == 2 && (sum(x[RB_ind]) >2 || sum(x[WR_ind]) >3)) {return(sum(x[TE_ind])*50)}
+  if(sum(x[WR_ind]) == 4 && (sum(x[RB_ind]) >2 || sum(x[TE_ind]) >1)) {return(sum(x[WR_ind])*50)}
+  if(sum(x[WR_ind]) > 4  || (sum(x[RB_ind]) >3 || sum(x[TE_ind]) >2)) {return(sum(x[WR_ind])*50)}
+  return(-current_solution_points)
 }
-
-# monitor function will do the following:
-# chart progress
-# show lineup evolution
-# save lineup chromosomes that are "good enough" to simulate
-# (simulate the lineup?) 
-monitor <- function(x){
-  
-}
-
 
 #Model building
 iter = 500
 player_size <- length(contest[,1])
 #Salary Limit from DK
-salary_cap <- 50000
+sal.limit <- 50000
 
-ga_model <- rbga.bin(size = player_size, popSize = 500, iters = iter, mutationChance = 0.01,  evalFunc = evalFunc)
+GAmodel <- rbga.bin(size = player_size, popSize = 500, iters = iter, mutationChance = 0.01,  evalFunc = evalFunc)
 
-cat(genalg:::summary.rbga(ga_model,echo=T))
+cat(genalg:::summary.rbga(GAmodel,echo=T))
 
-best_solution <- ga_model$populaton[which.min(ga_model$evaluations), ]
+best_solution <- GAmodel$population[which.min(GAmodel$evaluations), ]
 best_ind <- which(best_solution == 1)
 
 contest[best_ind,]
-
-
-
-# add column for DK points (easy for offense), harder for D/ST
