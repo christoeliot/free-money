@@ -36,6 +36,8 @@ for (i in 1:length(tms)){
   game_logs_2017 <- rbind(game_logs_2017, do.call('rbind', lapply(gls, function(x) x$game_logs)))
   Sys.sleep(0.5)
 }
+colnames(game_logs_2017)[1] <- 'game_log_id'
+write.csv(game_logs_2017, 'Football/nfl_game_logs_2017.csv')
 
 team_game_logs_2017 <- data.frame()
 ep <- 'team_game_logs'
